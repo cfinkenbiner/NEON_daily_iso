@@ -142,7 +142,7 @@ def conditional_copula_ts(tsP, xday_stats, H_scale, O_scale):
     return series
 
 
-def downscaling_to_daily(sitename, daily_P, df_iso, out_dir_loc):
+def downscaling_to_daily(sitename, daily_P, df_iso, out_dir_loc, residual_corr=True):
     print('Downscaling '+ sitename +' ...')
     
     '''
@@ -261,13 +261,43 @@ def downscaling_to_daily(sitename, daily_P, df_iso, out_dir_loc):
         daily_P['d2H'] = tsH_daily
         daily_P['d18O'] = tsO_daily 
 
-        print('Done.')
+        
+        ''' Residual Correction '''
+        if residual_corr == True:
+    
+            # goes through each biweekly period in the isotope data
+            for n in np.arange(len(df_iso['setDate'])):
+                start_date = df_iso['setDate'].iloc[n]
+                end_date = df_iso['collectDate'].iloc[n]
+            
+                # find observed H and O
+                obs_d2Hw = df_iso['d2HWater'].iloc[n]
+                obs_d18Ow = df_iso['d18OWater'].iloc[n]
+            
+                # find corresponding data in synthetic time series
+                mask = (daily_P.index >= start_date) & (daily_P.index <= end_date)
+                df_n = daily_P.loc[mask]
+                
+                syn_d2Hw = np.nansum(df_n['d2H'].values * df_n['Total P'].values) / np.nansum(df_n['Total P'].values)
+                syn_d18Ow = np.nansum(df_n['d18O'].values * df_n['Total P'].values) / np.nansum(df_n['Total P'].values)
+            
+                # find difference between observed and synthetic
+                diff_d2Hw = obs_d2Hw - syn_d2Hw
+                diff_d18Ow = obs_d18Ow - syn_d18Ow
+                
+                daily_P['d2H'].loc[mask] = daily_P['d2H'].loc[mask] + diff_d2Hw
+                daily_P['d18O'].loc[mask] = daily_P['d18O'].loc[mask] + diff_d18Ow        
+                
+            print('Done.')
+        
+        else:
+            print('Done.')
     
     return daily_P
     
 
 ''' Read .xlsx precipitation and isotope data '''
-def read_p_data(sitename, precip_data_loc, precip_filter, iso_data_loc, out_dir_loc):
+def read_p_data(sitename, precip_data_loc, precip_filter, iso_data_loc, out_dir_loc, residual_corr):
 
     # 30min Precipitation Data
     df_P30 = pd.read_excel(precip_data_loc,index=False)
@@ -320,4 +350,4 @@ def read_p_data(sitename, precip_data_loc, precip_filter, iso_data_loc, out_dir_
     
 
 if __name__ == '__main__':
-    read_p_data(sitename, precip_data_loc, precip_filter, iso_data_loc, out_dir_loc)
+    read_p_data(sitename, precip_data_loc, precip_filter, iso_data_loc, out_dir_loc, residual_corr)

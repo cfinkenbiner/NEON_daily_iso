@@ -43,7 +43,7 @@ for s in np.arange(len(site_list)):
     
     ### runs downscaling method
     site_name = site_list[0]
-    site_dailyP = iso_ds.read_p_data(site_list[s], precip_30min_loc, precip_filter, iso_p_loc, out_dir)
+    site_dailyP = iso_ds.read_p_data(site_list[s], precip_30min_loc, precip_filter, iso_p_loc, out_dir, residual_corr=True)
     
     if 'd2H' in site_dailyP.columns:
         

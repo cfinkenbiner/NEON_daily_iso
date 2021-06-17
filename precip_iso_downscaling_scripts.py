@@ -308,7 +308,7 @@ def read_p_data(sitename, precip_data_loc, precip_filter, iso_data_loc, out_dir_
     if 'secPrecipBulk' in df_P30:
         df_P30b.loc[df_P30b['secPrecipBulk'] < precip_filter,'secPrecipBulk'] = 0
         precip_daily = df_P30b['secPrecipBulk'].resample('D').sum() # sum to total daily P
-    
+        
     else:
         df_P30b.loc[df_P30b['priPrecipBulk'] < precip_filter,'priPrecipBulk'] = 0
         precip_daily = df_P30b['priPrecipBulk'].resample('D').sum() # sum to total daily P

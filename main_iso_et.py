@@ -163,9 +163,17 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
        
 
 if __name__ == '__main__':
-  dt = getCleanedIsotope('C:/Users/libon/Box/neon_extrac_data/Scientific Data Code/keeling isotopes/et_C13_iso.csv'
+  C13_iso = getCleanedIsotope('D:/NEON_daily_iso/keeling isotopes/et_C13_iso.csv'
                           ,'C13', 
-                         'C:/Users/libon/Box/neon_extrac_data/Scientific Data Code/Output/')
+                         'D:/NEON_daily_iso/Output/')
+  
+  H2_iso = getCleanedIsotope('D:/NEON_daily_iso/keeling isotopes/et_H2_iso.csv'
+                          ,'H2', 
+                         'D:/NEON_daily_iso/Output/')
+  
+  O18_iso = getCleanedIsotope('D:/NEON_daily_iso/keeling isotopes/et_O18_iso.csv'
+                          ,'O18', 
+                         'D:/NEON_daily_iso/Output/')
                          
     
     

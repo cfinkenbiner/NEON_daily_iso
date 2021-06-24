@@ -33,5 +33,5 @@ for i in np.arange(1,11):
     df_avg_std_d2H = df_avg_std_d2H.append(d2H.std(axis=0), ignore_index = True)
     df_avg_std_d18O = df_avg_std_d18O.append(d18O.std(axis=0), ignore_index = True)
     
-df_avg_std_d2H.to_csv(ROOTDIR + 'd2H_Pstds.csv')
-df_avg_std_d18O.to_csv(ROOTDIR + 'd18O_Pstds.csv')
+df_avg_std_d2H.to_csv(ROOTDIR + '/d2H_Pstds.csv')
+df_avg_std_d18O.to_csv(ROOTDIR + '/d18O_Pstds.csv')

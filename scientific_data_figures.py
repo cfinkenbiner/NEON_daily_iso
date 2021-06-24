@@ -23,7 +23,7 @@ df_p_d18O = pd.read_csv(ROOTDIR + '/daily_d18O.csv', parse_dates=True, index_col
 
 
 ''' Figure 1. Time series of generated datasets '''
-make_Fig1 = False
+make_Fig1 = True
 if make_Fig1 == True:
     ### location of NOEN 30 min Precip + Biweekly Isotope Data
     df_biweekly_onaq = pd.read_excel(ROOTDIR + '/DATA/IsoData/ONAQIsoData.xlsx', parse_dates=True, index_col='collectDate')
@@ -74,12 +74,12 @@ if make_Fig1 == True:
     ax11b.set_ylabel('Precpitation (cm)', color='b')
     
     plt.tight_layout()
-    plt.savefig(ROOTDIR+'Fig1.png', dpi=500)
+    plt.savefig(ROOTDIR+'/Fig1.png', dpi=500)
     plt.show() ; plt.close()
 
 
 ''' Figure 2. Summary maps of different data products '''
-make_Fig2 = False
+make_Fig2 = True
 if make_Fig2 == True:
     df_p_d2H = pd.read_csv(ROOTDIR + '/daily_d2H.csv', parse_dates=True, index_col=0)
     df_p_d18O = pd.read_csv(ROOTDIR + '/daily_d18O.csv', parse_dates=True, index_col=0)
@@ -140,15 +140,15 @@ if make_Fig2 == True:
                axgr[1], 1)
     axgr[1].text(-165, 15, 'b)', fontsize=14)
     
-    plt.savefig(ROOTDIR+'Fig2.png', dpi=500)
+    plt.savefig(ROOTDIR+'/Fig2.png', dpi=500)
     plt.show()
 
 
 ''' Figure 3. Average std by site map '''
 make_Fig3 = True
 if make_Fig3 == True:
-    df_avg_std_d2H = pd.read_csv(ROOTDIR + 'd2H_Pstds.csv', index_col=0)
-    df_avg_std_d18O = pd.read_csv(ROOTDIR + 'd18O_Pstds.csv', index_col=0)
+    df_avg_std_d2H = pd.read_csv(ROOTDIR + '/d2H_Pstds.csv', index_col=0)
+    df_avg_std_d18O = pd.read_csv(ROOTDIR + '/d18O_Pstds.csv', index_col=0)
     df_summary = pd.read_csv(ROOTDIR + '/Site_Summary_Table.csv') # for site lat/lon
     
     lat = []
@@ -206,7 +206,7 @@ if make_Fig3 == True:
                axgr[1], 1)
     axgr[1].text(-165, 15, 'b)', fontsize=14)
     
-    plt.savefig(ROOTDIR+'Fig3.png', dpi=500)
+    plt.savefig(ROOTDIR+'/Fig3.png', dpi=500)
     plt.show()
 
 

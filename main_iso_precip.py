@@ -72,9 +72,9 @@ for s in np.arange(len(site_list)):
         df_d2H[site_list[s]] = np.nan
         df_d18O[site_list[s]] = np.nan
 
-df_d2H = df_d2H.rename(columns = {'DateTime': 'Date'}, inplace = True)
-df_d18O = df_d18O.rename(columns = {'DateTime': 'Date'}, inplace = True)
+df_d2H = df_d2H.rename_axis('Date')
+df_d18O = df_d18O.rename_axis('Date')
 
 ### export csv files
-df_d2H.to_csv(out_dir + 'daily_d2H.csv')
-df_d18O.to_csv(out_dir + 'daily_d18O.csv')
+df_d2H.to_csv(out_dir + '/daily_d2H.csv')
+df_d18O.to_csv(out_dir + '/daily_d18O.csv')

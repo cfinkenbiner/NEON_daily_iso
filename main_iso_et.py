@@ -156,8 +156,8 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
     Data.sort_values(by=['date'], ignore_index = True, inplace=True)
     
     if outputIsoPath is not None:
-        Data.to_csv(outputIsoPath + whichIsotope + '_qc.csv', index = False)
-        flags.to_csv(outputIsoPath + whichIsotope + '_data.csv', index = False)
+        Data.to_csv(outputIsoPath + whichIsotope + '_data.csv', index = False)
+        flags.to_csv(outputIsoPath + whichIsotope + '_qc.csv', index = False)
     else:
         return Data, flags
        

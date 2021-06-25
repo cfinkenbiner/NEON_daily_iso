@@ -46,7 +46,6 @@ site_list = ['ABBY','BARR','BART','BLAN','BONA','CLBJ','CPER','DCFS','DEJU','DEL
 
 ### Iterate through site list        
 for s in np.arange(len(site_list)):
-    df_meta[site_list[s]] = 1.0
     
     if path.exists(file_dir + 'PrecipData/' + str(site_list[s]) + 'PrecipData.xlsx'): 
         precip_30min_loc = file_dir + 'PrecipData/' + str(site_list[s]) + 'PrecipData.xlsx'
@@ -95,6 +94,7 @@ for s in np.arange(len(site_list)):
 df_d2H = df_d2H.rename_axis('Date')
 df_d18O = df_d18O.rename_axis('Date')
 df_meta = df_meta.rename_axis('Date')
+df_meta = df_meta.fillna(1)
 
 ### export csv files
 df_d2H.to_csv(out_dir + '/daily_p_d2H.csv')

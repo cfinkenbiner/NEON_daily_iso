@@ -136,7 +136,6 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
                               listOfFlagDf)  
     Data =  reduce(lambda x, y: pd.merge(x, y, on = 'date', how = 'outer'), 
                                 listOfDataDF)
-    
     assert min(flags['date']) == min(Data['date']), "start time of flags and data should be the same"
     assert max(flags['date']) == max(Data['date']), "end time of flags and data should be the same"
     
@@ -146,13 +145,20 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
     dts = pd.DataFrame({'date':pd.date_range(startDate, endDate)})
     dts['date'] = dts['date'].dt.date
     
-    flags = flags.merge(dts, on = 'date', how = 'outer')
-
+    flags = pd.merge(flags, dts, on = 'date', how = 'outer')
     flags = flags.fillna(4)
+    flags.drop_duplicates(subset=None, keep='first', 
+                          inplace=True, ignore_index=True)
     flags.sort_values(by=['date'], ignore_index = True, inplace=True)
+    
+    
     ################isotope dataframe
     Data = Data.merge(dts, on = 'date', how = 'outer')
     Data = Data.fillna(-9999)
+    Data.sort_values(by=['date'], ignore_index = True, inplace=True)
+    
+    Data.drop_duplicates(subset=None, keep='first', 
+                          inplace=True, ignore_index=True)
     Data.sort_values(by=['date'], ignore_index = True, inplace=True)
     
     if outputIsoPath is not None:

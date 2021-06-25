@@ -151,7 +151,7 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
     flags = flags.fillna(4)
     flags.sort_values(by=['date'], ignore_index = True, inplace=True)
     ################isotope dataframe
-   
+    Data = Data.merge(dts, on = 'date', how = 'outer')
     Data = Data.fillna(-9999)
     Data.sort_values(by=['date'], ignore_index = True, inplace=True)
     

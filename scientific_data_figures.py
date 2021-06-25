@@ -23,7 +23,7 @@ df_p_d18O = pd.read_csv(ROOTDIR + '/daily_d18O.csv', parse_dates=True, index_col
 
 
 ''' Figure 1. Time series of generated datasets '''
-make_Fig1 = True
+make_Fig1 = False
 if make_Fig1 == True:
     ### location of NOEN 30 min Precip + Biweekly Isotope Data
     df_biweekly_onaq = pd.read_excel(ROOTDIR + '/DATA/IsoData/ONAQIsoData.xlsx', parse_dates=True, index_col='collectDate')
@@ -84,6 +84,7 @@ if make_Fig2 == True:
     df_p_d2H = pd.read_csv(ROOTDIR + '/daily_d2H.csv', parse_dates=True, index_col=0)
     df_p_d18O = pd.read_csv(ROOTDIR + '/daily_d18O.csv', parse_dates=True, index_col=0)
     df_summary = pd.read_csv(ROOTDIR + '/Site_Summary_Table.csv') # for site lat/lon
+    df_ET_stats = pd.read_csv(ROOTDIR + '/ET_iso_stats.csv')
     
     lat = []
     lon = []
@@ -110,7 +111,7 @@ if make_Fig2 == True:
                         alpha=0.85, 
                         s=100,
                         c = values,
-                        cmap = plt.get_cmap("viridis"), 
+                        cmap = plt.get_cmap("RdYlGn_r"), 
                         transform = ccrs.PlateCarree())
         axgr.cbar_axes[ii].colorbar(im)
         axgr[ii].set_title(label)
@@ -118,28 +119,53 @@ if make_Fig2 == True:
     projection = ccrs.PlateCarree()
     axes_class = (GeoAxes, dict(map_projection = projection))   
     
-    fig = plt.figure(1,figsize = (12,7))
+    fig = plt.figure(1,figsize = (18,12))
     axgr = AxesGrid(fig, 111, axes_class = axes_class, 
-                        nrows_ncols=(1,2), 
-                        axes_pad=0.6,
+                        nrows_ncols=(3,2), 
+                        axes_pad=0.75,
                         cbar_location = 'right',
                         cbar_mode = 'each',
-                        cbar_pad = 0.3,
+                        cbar_pad = 0.2,
                         cbar_size = '3%',
                         label_mode = '')
     
     create_map(np.array(lat), np.array(lon),
                df_p_d2H.mean(axis=0),
-               'Average, $\delta^{2}$H (‰)', 
+               'Average P, $\delta^{2}$H (‰)', 
                axgr[0], 0)
     axgr[0].text(-165, 15, 'a)', fontsize=14)
     
     create_map(np.array(lat), np.array(lon),
                df_p_d18O.mean(axis=0),
-               'Average, $\delta^{18}$O (‰)', 
+               'Average P, $\delta^{18}$O (‰)', 
                axgr[1], 1)
     axgr[1].text(-165, 15, 'b)', fontsize=14)
+
+    create_map(np.array(lat), np.array(lon),
+               df_ET_stats['H2_ET_mean'],
+               'Average ET, $\delta^{2}$H (‰)', 
+               axgr[2], 2)
+    axgr[2].text(-165, 15, 'c)', fontsize=14)
     
+    create_map(np.array(lat), np.array(lon),
+               df_ET_stats['O18_ET_mean'],
+               'Average ET, $\delta^{18}$O (‰)', 
+               axgr[3], 3)
+    axgr[3].text(-165, 15, 'd)', fontsize=14)
+
+    create_map(np.array(lat), np.array(lon),
+               df_ET_stats['C13_mean'],
+               r'Average ET, $\delta^{13}$C (‰)', 
+               axgr[4], 4)
+    axgr[4].text(-165, 15, 'e)', fontsize=14)
+    
+    # create_map(np.array(lat), np.array(lon),
+    #            df_ET_stats['O18_slope_std'],
+    #            'Standard Deviation Slope ET, $\delta^{18}$O (‰)', 
+    #            axgr[5], 5)
+    # axgr[5].text(-165, 15, 'f)', fontsize=14)
+    
+    fig.delaxes(axgr[5])
     plt.savefig(ROOTDIR+'/Fig2.png', dpi=500)
     plt.show()
 
@@ -150,6 +176,7 @@ if make_Fig3 == True:
     df_avg_std_d2H = pd.read_csv(ROOTDIR + '/d2H_Pstds.csv', index_col=0)
     df_avg_std_d18O = pd.read_csv(ROOTDIR + '/d18O_Pstds.csv', index_col=0)
     df_summary = pd.read_csv(ROOTDIR + '/Site_Summary_Table.csv') # for site lat/lon
+    df_ET_stats = pd.read_csv(ROOTDIR + '/ET_iso_stats.csv')
     
     lat = []
     lon = []
@@ -176,7 +203,7 @@ if make_Fig3 == True:
                         alpha=0.85, 
                         s=100,
                         c = values,
-                        cmap = plt.get_cmap("viridis"), 
+                        cmap = plt.get_cmap("RdYlGn_r"), 
                         transform = ccrs.PlateCarree())
         axgr.cbar_axes[ii].colorbar(im)
         axgr[ii].set_title(label)
@@ -184,13 +211,13 @@ if make_Fig3 == True:
     projection = ccrs.PlateCarree()
     axes_class = (GeoAxes, dict(map_projection = projection))   
     
-    fig = plt.figure(1,figsize = (12,7))
+    fig = plt.figure(1,figsize = (12,6))
     axgr = AxesGrid(fig, 111, axes_class = axes_class, 
                         nrows_ncols=(1,2), 
-                        axes_pad=0.6,
+                        axes_pad=0.75,
                         cbar_location = 'right',
                         cbar_mode = 'each',
-                        cbar_pad = 0.3,
+                        cbar_pad = 0.2,
                         cbar_size = '3%',
                         label_mode = '')
     
@@ -210,6 +237,77 @@ if make_Fig3 == True:
     plt.show()
 
 
+''' Figure 4. Average STE in slope of Keeling '''
+make_Fig4 = True
+if make_Fig4 == True:
+    df_avg_std_d2H = pd.read_csv(ROOTDIR + '/d2H_Pstds.csv', index_col=0)
+    df_avg_std_d18O = pd.read_csv(ROOTDIR + '/d18O_Pstds.csv', index_col=0)
+    df_summary = pd.read_csv(ROOTDIR + '/Site_Summary_Table.csv') # for site lat/lon
+    df_ET_stats = pd.read_csv(ROOTDIR + '/ET_iso_stats.csv')
+    
+    lat = []
+    lon = []
+    
+    for i in df_avg_std_d2H.columns:
+        row = df_summary[df_summary['Site ID'].str.match(i)]
+        
+        if len(row) > 0:
+            lat.append(float(row['Latitude'].values))
+            lon.append(float(row['Longitude'].values))
+        else:
+            lat.append(-9999)
+            lon.append(-9999)
+    
+    def create_map(lat, lon, values, label, current_subplot, ii):
+        ax = current_subplot
+        ax.set_extent([-170, -55, 10, 70], ccrs.Geodetic())
+        gl = ax.gridlines(linestyle='--', draw_labels=True)
+        gl.xlabels_top = False
+        gl.ylabels_right = False
+        ax.coastlines()
+        
+        im = ax.scatter(lon, lat, 
+                        alpha=1, 
+                        s=100,
+                        c = values,
+                        cmap = plt.get_cmap("RdYlGn_r"), 
+                        transform = ccrs.PlateCarree())
+        axgr.cbar_axes[ii].colorbar(im)
+        axgr[ii].set_title(label)
+        
+    projection = ccrs.PlateCarree()
+    axes_class = (GeoAxes, dict(map_projection = projection))   
+    
+    fig = plt.figure(1,figsize = (19,6))
+    axgr = AxesGrid(fig, 111, axes_class = axes_class, 
+                        nrows_ncols=(1,3), 
+                        axes_pad=0.75,
+                        cbar_location = 'right',
+                        cbar_mode = 'each',
+                        cbar_pad = 0.2,
+                        cbar_size = '3%',
+                        label_mode = '')
+    
+    create_map(np.array(lat), np.array(lon),
+               df_ET_stats['H2_slope_std'],
+               'Average Standard Error, $\delta^{2}$H (‰)', 
+               axgr[0], 0)
+    axgr[0].text(-165, 15, 'a)', fontsize=14)
+    
+    create_map(np.array(lat), np.array(lon),
+               df_ET_stats['O18_slope_std'],
+               'Average Standard Error, $\delta^{18}$O (‰)', 
+               axgr[1], 1)
+    axgr[1].text(-165, 15, 'b)', fontsize=14)
+
+    create_map(np.array(lat), np.array(lon),
+               df_ET_stats['C13_slope_std'],
+               r'Average Standard Error, $\delta^{13}$C (‰)', 
+               axgr[2], 2)
+    axgr[2].text(-165, 15, 'c)', fontsize=14)
+    
+    plt.savefig(ROOTDIR+'/Fig4.png', dpi=500)
+    plt.show()
 
 
 

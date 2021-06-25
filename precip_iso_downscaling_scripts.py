@@ -302,22 +302,23 @@ def downscaling_to_daily(sitename, daily_P, df_iso, out_dir_loc, residual_corr=T
 def read_p_data(sitename, precip_data_loc, precip_filter, iso_data_loc, out_dir_loc, residual_corr):
 
     # 30min Precipitation Data
-    df_P30 = pd.read_excel(precip_data_loc,index=False)
+    df_P30 = pd.read_excel(precip_data_loc, index=False)
     df_P30 = changeTimes_change_Pdata(df_P30)
-    
     df_P30b = df_P30.set_index('DateTime')
     
     if 'secPrecipBulk' in df_P30:
-        df_P30b.loc[df_P30b['secPrecipBulk'] < precip_filter,'secPrecipBulk'] = 0
-        precip_daily = df_P30b['secPrecipBulk'].resample('D').sum() # sum to total daily P
+        precip_daily_unfiltered = df_P30b['secPrecipBulk'].resample('D').sum() # sum to total daily P
+        precip_daily = np.where(precip_daily_unfiltered < precip_filter, 0, precip_daily_unfiltered)
         
     else:
-        df_P30b.loc[df_P30b['priPrecipBulk'] < precip_filter,'priPrecipBulk'] = 0
-        precip_daily = df_P30b['priPrecipBulk'].resample('D').sum() # sum to total daily P
+        precip_daily_unfiltered = df_P30b['priPrecipBulk'].resample('D').sum() # sum to total daily P
+        precip_daily = np.where(precip_daily_unfiltered < precip_filter, 0, precip_daily)        
     
     frac_year = df_P30b['FracYear'].resample('D').mean() # average daily year fraction
 
-    daily_P = pd.DataFrame({'Total P': precip_daily,'FracYear': frac_year})
+    daily_P = pd.DataFrame({'Total P (unfiltered)': precip_daily_unfiltered, 
+                            'Total P': precip_daily,
+                            'FracYear': frac_year})
     daily_P['Total P'].replace(0, np.nan, inplace=True)
     
     print("Successfully read "+ sitename+ " precipitation amount data...")

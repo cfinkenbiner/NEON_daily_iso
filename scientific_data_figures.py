@@ -9,6 +9,7 @@ Created on Thu Jun 17 15:36:57 2021
 import os
 import pandas as pd
 import numpy as np
+import datetime
 import matplotlib.pyplot as plt
 import cartopy
 import cartopy.crs as ccrs
@@ -18,14 +19,29 @@ from cartopy.mpl.geoaxes import GeoAxes
 ROOTDIR = os.getcwd() # Home directory
 #'/Users/catiefinkenbiner/Documents/NEON/NEON_daily_isotope_dataset/NEON_daily_iso/'
 
-df_p_d2H = pd.read_csv(ROOTDIR + '/daily_d2H.csv', parse_dates=True, index_col=0)
-df_p_d18O = pd.read_csv(ROOTDIR + '/daily_d18O.csv', parse_dates=True, index_col=0)
+df_p_d2H = pd.read_csv(ROOTDIR + '/daily_p_d2H.csv', parse_dates=True, index_col=0)
+df_p_d18O = pd.read_csv(ROOTDIR + '/daily_p_d18O.csv', parse_dates=True, index_col=0)
 
+df_flux_d2H = pd.read_csv(ROOTDIR + '/daily_flux_d2H.csv', parse_dates=True, index_col=0)
+df_flux_d18O = pd.read_csv(ROOTDIR + '/daily_flux_d18O.csv', parse_dates=True, index_col=0)
+df_flux_d13C = pd.read_csv(ROOTDIR + '/daily_flux_d13C.csv', parse_dates=True, index_col=0)
+
+df_flux_d2H_qc = pd.read_csv(ROOTDIR + '/H2_qc.csv', parse_dates=True, index_col=0)
+df_qc_d2H = df_flux_d2H_qc.where(df_flux_d2H_qc == 0) == df_flux_d2H_qc.where(df_flux_d2H_qc == 0)
+df_flux_d2H_filter = df_flux_d2H[df_qc_d2H]
+
+df_flux_d18O_qc = pd.read_csv(ROOTDIR + '/O18_qc.csv', parse_dates=True, index_col=0)
+df_qc_d18O = df_flux_d18O_qc.where(df_flux_d18O_qc == 0) == df_flux_d18O_qc.where(df_flux_d18O_qc == 0)
+df_flux_d18O_filter = df_flux_d18O[df_qc_d18O]
+
+df_flux_d13C_qc = pd.read_csv(ROOTDIR + '/C13_qc.csv', parse_dates=True, index_col=0)
+df_qc_d13C = df_flux_d13C_qc.where(df_flux_d13C_qc == 0) == df_flux_d13C_qc.where(df_flux_d13C_qc == 0)
+df_flux_d13C_filter = df_flux_d13C[df_qc_d13C]
 
 ''' Figure 1. Time series of generated datasets '''
-make_Fig1 = False
+make_Fig1 = True
 if make_Fig1 == True:
-    ### location of NOEN 30 min Precip + Biweekly Isotope Data
+    ### location of NEON 30 min Precip + Biweekly Isotope Data
     df_biweekly_onaq = pd.read_excel(ROOTDIR + '/DATA/IsoData/ONAQIsoData.xlsx', parse_dates=True, index_col='collectDate')
     df_biweekly_wref = pd.read_excel(ROOTDIR + '/DATA/IsoData/WREFIsoData.xlsx', parse_dates=True, index_col='collectDate')
     
@@ -33,8 +49,8 @@ if make_Fig1 == True:
     df_daily_onaq = pd.read_csv(ROOTDIR + '/OUTPUT/ONAQ_daily_timeseries.csv', parse_dates=True, index_col=0)
     df_daily_wref = pd.read_csv(ROOTDIR + '/OUTPUT/WREF_daily_timeseries.csv', parse_dates=True, index_col=0)
     
-    
-    fig1, ax1 = plt.subplots(nrows=5, ncols=2, figsize=(12,15))
+    fig1, ax1 = plt.subplots(nrows=5, ncols=2, sharex=True, figsize=(12,15))
+    ax1[0,0].set_xlim([datetime.date(2019, 1, 1), datetime.date(2020, 6, 30)])
     
     ### Subplot [0,0] -- ONAQ
     ax1[0,0].plot(df_p_d2H.index, df_p_d2H['ONAQ'], 'o', color='k', label='Daily')
@@ -43,7 +59,7 @@ if make_Fig1 == True:
     ax00b.bar(df_daily_onaq.index, df_daily_onaq['Total P'], color='b', width=1, alpha=0.5)
     
     ax1[0,0].set_title(r'ONAQ')
-    ax1[0,0].set_ylabel(r'$\delta^{2}H$ (‰)')
+    ax1[0,0].set_ylabel(r'Precipitation, $\delta^{2}H$ (‰)')
     ax1[0,0].legend()
     
     ### Subplot [1,0]
@@ -52,8 +68,23 @@ if make_Fig1 == True:
     ax10b = ax1[1,0].twinx()
     ax10b.bar(df_daily_onaq.index, df_daily_onaq['Total P'], color='b', width=1, alpha=0.5)
     
-    ax1[1,0].set_ylabel(r'$\delta^{18}O$ (‰)')
+    ax1[1,0].set_ylabel(r'Precipitation, $\delta^{18}O$ (‰)')
     ax1[1,0].legend()
+
+    ### Subplot [2,0]
+    ax1[2,0].plot(df_flux_d2H_filter.index, df_flux_d2H_filter['ONAQ'], 'o', color='k', label='Daily')
+    ax1[2,0].set_ylabel(r'Flux, $\delta^{2}H$ (‰)')
+    ax1[2,0].legend()
+
+    ### Subplot [3,0]
+    ax1[3,0].plot(df_flux_d18O_filter.index, df_flux_d18O_filter['ONAQ'], 'o', color='k', label='Daily')
+    ax1[3,0].set_ylabel(r'Flux, $\delta^{18}O$ (‰)')
+    ax1[3,0].legend()
+
+    ### Subplot [4,0]
+    ax1[4,0].plot(df_flux_d13C_filter.index, df_flux_d13C_filter['ONAQ'], 'o', color='k', label='Daily')
+    ax1[4,0].set_ylabel(r'Flux, $\delta^{13}C$ (‰)')
+    ax1[4,0].legend()
     
     
     ### Subplot [0,1] -- WREF
@@ -72,14 +103,27 @@ if make_Fig1 == True:
     ax11b.bar(df_daily_wref.index, df_daily_wref['Total P'], color='b', width=1, alpha=0.5)
     
     ax11b.set_ylabel('Precpitation (cm)', color='b')
-    
+
+    ### Subplot [2,0]
+    ax1[2,1].plot(df_flux_d2H_filter.index, df_flux_d2H_filter['WREF'], 'o', color='k', label='Daily')
+    ax1[2,1].set_ylabel(r'Flux, $\delta^{2}H$ (‰)')
+
+    ### Subplot [3,0]
+    ax1[3,1].plot(df_flux_d18O_filter.index, df_flux_d18O_filter['WREF'], 'o', color='k', label='Daily')
+    ax1[3,1].set_ylabel(r'Flux, $\delta^{18}O$ (‰)')
+
+    ### Subplot [4,0]
+    ax1[4,1].plot(df_flux_d13C_filter.index, df_flux_d13C_filter['WREF'], 'o', color='k', label='Daily')
+    ax1[4,1].set_ylabel(r'Flux, $\delta^{13}C$ (‰)')
+
+    fig1.autofmt_xdate()
     plt.tight_layout()
     plt.savefig(ROOTDIR+'/Fig1.png', dpi=500)
     plt.show() ; plt.close()
-
-
+    
+    
 ''' Figure 2. Summary maps of different data products '''
-make_Fig2 = True
+make_Fig2 = False
 if make_Fig2 == True:
     df_p_d2H = pd.read_csv(ROOTDIR + '/daily_d2H.csv', parse_dates=True, index_col=0)
     df_p_d18O = pd.read_csv(ROOTDIR + '/daily_d18O.csv', parse_dates=True, index_col=0)
@@ -171,7 +215,7 @@ if make_Fig2 == True:
 
 
 ''' Figure 3. Average std by site map '''
-make_Fig3 = True
+make_Fig3 = False
 if make_Fig3 == True:
     df_avg_std_d2H = pd.read_csv(ROOTDIR + '/d2H_Pstds.csv', index_col=0)
     df_avg_std_d18O = pd.read_csv(ROOTDIR + '/d18O_Pstds.csv', index_col=0)
@@ -238,7 +282,7 @@ if make_Fig3 == True:
 
 
 ''' Figure 4. Average STE in slope of Keeling '''
-make_Fig4 = True
+make_Fig4 = False
 if make_Fig4 == True:
     df_avg_std_d2H = pd.read_csv(ROOTDIR + '/d2H_Pstds.csv', index_col=0)
     df_avg_std_d18O = pd.read_csv(ROOTDIR + '/d18O_Pstds.csv', index_col=0)

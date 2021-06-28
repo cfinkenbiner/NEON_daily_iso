@@ -74,6 +74,7 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
                     "TEAK","TREE","UKFS","DCFS","DEJU"]
     isotopeSites.sort()
     print(isotopeSites)
+    print(rawIsotope.duplicated().shape[0], rawIsotope.shape[0])
     for site in isotopeSites:
         
         iso = rawIsotope[rawIsotope['site'] == site]
@@ -88,7 +89,7 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
                                     
             continue
           
-            
+           
         ########raw isotope dataset ########
         isotopeFrame = copy.deepcopy(iso) 
         isotopeFrame['date'] = pd.to_datetime(isotopeFrame['date'], format = '%Y-%m-%d %H:%M:%S')
@@ -101,26 +102,26 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
         #######Generating isotope flags######
         isoFlagData = copy.deepcopy(isotopeFrame)
         ##number of points to generate keeling plot nptsReg >= 5 is 0  1 otherwise
-        isoFlagData[site +'_qc'] = np.where(isoFlagData['nptsReg'] >= 5, 0, 1) 
+        isoFlagData[site] = np.where(isoFlagData['nptsReg'] >= 5, 0, 2) 
         
         ##if number of points is good then assign rsq < 0.9 to be 2 
-        isoFlagData.loc[(isoFlagData[site + '_qc'] == 0) & (isoFlagData['rsq'] < 0.9),
-                        site +'_qc'] = 2
+        isoFlagData.loc[(isoFlagData[site] == 0) & (isoFlagData['rsq'] < 0.9),
+                        site] = 3
         
 
-        isoFlagData.loc[(isoFlagData[site +'_qc'] != 0),'flux'] = np.nan   
+        isoFlagData.loc[(isoFlagData[site] != 0),'flux'] = np.nan   
                      
         p75, p25 = np.nanpercentile(isoFlagData['flux'], [75, 25]) 
         IQR = p75 - p25
         
-        isoFlagData.loc[(isoFlagData[site +'_qc'] == 0) , site + '_qc'] = isoFlagData.loc[(isoFlagData[site +'_qc'] == 0) , 'flux'].apply(lambda x: 0 if (x >= p25 - 1.5*IQR and x <= p75 + 1.5*IQR) else 3)
+        isoFlagData.loc[(isoFlagData[site] == 0) , site] = isoFlagData.loc[(isoFlagData[site] == 0) , 'flux'].apply(lambda x: 0 if (x >= p25 - 1.5*IQR and x <= p75 + 1.5*IQR) else 4)
         
         if isTimeSeries:
             rawSeries = isoRawData[['date', site]].copy()
             rawSeries.rename(columns = {site:'raw'}, inplace = True)
 
             afterqcFlag = isoFlagData[['date', 'flux']].copy()
-            afterAllFlag = isoFlagData.loc[isoFlagData[site + '_qc'] == 0, ['date','flux']].copy()
+            afterAllFlag = isoFlagData.loc[isoFlagData[site] == 0, ['date','flux']].copy()
             afterAllFlag.rename(columns = {'flux':'after flag'}, inplace = True)
             
             merged_ = reduce(lambda x, y: pd.merge(x, y, on = 'date', how = 'outer'), 
@@ -128,7 +129,7 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
             getTimeSeriesPlot(site,whichIsotope,merged_)
 
     ##Overall time series starts and ends        
-        listOfFlagDf.append(isoFlagData[['date', site + '_qc']])
+        listOfFlagDf.append(isoFlagData[['date', site]])
                                              
 
       ################flag datafrane  
@@ -146,7 +147,8 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
     dts['date'] = dts['date'].dt.date
     
     flags = pd.merge(flags, dts, on = 'date', how = 'outer')
-    flags = flags.fillna(4)
+    flags = flags.fillna(1)
+    print(flags.drop_duplicates().shape[0], flags.shape[0])
     flags.drop_duplicates(subset=None, keep='first', 
                           inplace=True, ignore_index=True)
     flags.sort_values(by=['date'], ignore_index = True, inplace=True)
@@ -156,7 +158,7 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
     Data = Data.merge(dts, on = 'date', how = 'outer')
     Data = Data.fillna(-9999)
     Data.sort_values(by=['date'], ignore_index = True, inplace=True)
-    
+    print(Data.drop_duplicates().shape[0], Data.shape[0])
     Data.drop_duplicates(subset=None, keep='first', 
                           inplace=True, ignore_index=True)
     Data.sort_values(by=['date'], ignore_index = True, inplace=True)
@@ -166,24 +168,26 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
         flags.to_csv(outputIsoPath + whichIsotope + '_qc.csv', index = False)
     else:
         return Data, flags
+        # return None
        
 
 if __name__ == '__main__':
   C13_iso = getCleanedIsotope('D:/NEON_daily_iso/keeling isotopes/et_C13_iso.csv'
-                          ,'C13', 
-                         'D:/NEON_daily_iso/Output/')
+                          ,'C13',
+                          'D:/NEON_daily_iso/Output/')
+                         
   
   H2_iso = getCleanedIsotope('D:/NEON_daily_iso/keeling isotopes/et_H2_iso.csv'
-                          ,'H2', 
-                         'D:/NEON_daily_iso/Output/')
+                           ,'H2', 
+                          'D:/NEON_daily_iso/Output/')
   
   O18_iso = getCleanedIsotope('D:/NEON_daily_iso/keeling isotopes/et_O18_iso.csv'
-                          ,'O18', 
-                         'D:/NEON_daily_iso/Output/')
+                           ,'O18', 
+                          'D:/NEON_daily_iso/Output/')
                          
     
     
-    
+
 
 
     

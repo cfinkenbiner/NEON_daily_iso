@@ -82,9 +82,8 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
             raw = pd.DataFrame(pd.date_range('2017-01-01', '2020-01-01'), columns=['date'])
             raw['date'] = raw['date'].dt.date
             raw[site] = raw.shape[0]*[np.nan]
-            raw[site + '_qc'] = raw.shape[0]*[np.nan]
             listOfDataDF.append(raw[['date', site]])
-            listOfFlagDf.append(raw[['date', site + '_qc',]])
+            listOfFlagDf.append(raw[['date', site ]])
                                    
                                     
             continue

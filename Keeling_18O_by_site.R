@@ -65,7 +65,9 @@ layer.isotope <- function(hdf5_file, sitename, which_part = "H2") {
       ###The isotope dataset
       data_iso <- all_layer[[iso_data]][,c("mean_cal","timeBgn")]
       ###The Dry mole H2O dataset
-      data_rtio <- all_layer[[iso_con]][,c("mean","timeBgn")]
+      data_rtio <- all_layer[[iso_con]][,c("mean","timeBgn")] ## no way to generate a ¡®calibrated¡¯ version of rtioMoleWetH2o 
+                                                              ## because the reference measurements don¡¯t 
+                                                              ## have a known value of rtioMoleWetH2o
       
       names(data_iso) <- c(paste0(which_part, "_isoH2o"),"timeBgn")
       names(data_rtio) <- c(paste0(which_part, "_",iso_con),"timeBgn")

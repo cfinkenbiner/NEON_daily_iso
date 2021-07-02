@@ -53,7 +53,7 @@ def getProcessed(df):
 
 def getOriginIso(df,dfFlag,siteName):
     cData = df[['date',siteName]]
-   
+    
     cFlag = dfFlag[['date',siteName]]
     cMerge = pd.merge(cData, cFlag, on = 'date')
     cMerge.rename(columns = {siteName + '_x': siteName,
@@ -106,7 +106,7 @@ for i in np.arange(len(neonList)):
         assert O18TimeStd == fO18[neonList[i]].std()    
                                                        
         inSiteList.extend([O18TimeMean, O18TimeStd, O18SlopeMean,
-                           O18SlopeStd, isoO18_p.shape[0], isoO18_p.shape[0]/isoO18.shape[0]])
+                           O18SlopeStd, isoO18_p.shape[0], isoO18_p.shape[0]/newO.shape[0]])
 
     if isoH2.empty:
         inSiteList.extend([np.nan]*6)
@@ -129,7 +129,7 @@ for i in np.arange(len(neonList)):
         assert H2TimeStd == fH2[neonList[i]].std()  
         
         inSiteList.extend([H2TimeMean, H2TimeStd, H2SlopeMean,
-                           H2SlopeStd, isoH2_p.shape[0], isoH2_p.shape[0]/isoH2.shape[0]])
+                           H2SlopeStd, isoH2_p.shape[0], isoH2_p.shape[0]/newH.shape[0]])
    
     if isoC13.empty:
         inSiteList.extend([np.nan]*6)
@@ -150,7 +150,7 @@ for i in np.arange(len(neonList)):
         C13SlopeMean = isoC13_p['slopeStd'].mean()
         C13SlopeStd = isoC13_p['slopeStd'].std() 
         inSiteList.extend([C13TimeMean, C13TimeStd, C13SlopeMean,
-                           C13SlopeStd, isoC13_p.shape[0], isoC13_p.shape[0]/isoC13.shape[0]])
+                           C13SlopeStd, isoC13_p.shape[0], isoC13_p.shape[0]/newcarb.shape[0]])
     dfSite.loc[i,:] = inSiteList
     print('---------------')
 

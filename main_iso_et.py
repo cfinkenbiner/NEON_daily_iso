@@ -22,10 +22,10 @@ import os
     
     xxxx_qc : xxxx is the four letter abbreviation of NEON sites, 
                    0: the data point has the recommended quality,
-                   1: this point has # keeling  < 5
-                   2: this point has rsq < 0.9
-                   3: this point is beyond the IQR (IQR is based on rsq >= 0.9, # keeling >= 5)
-                   4: no flag available 
+                   1: no calibration isotope
+                   2: this point has number of keeling points >= 5
+                   3: the keeling r2 is smaller than 0.9
+                   4: this point is beyond the IQR (IQR is based on rsq >= 0.9, # keeling >= 5)
 '''
 
 
@@ -53,10 +53,10 @@ def getCleanedIsotope(rawIsoPath, whichIsotope,
                       isTimeSeries = False): 
                                                          
     '''     rawIsoPath  : the absolute path of istope .csv files
-              flagPath  : the absolute path where the user would like to store the isotope flags
-              dataPath  : the absolute path where the user would like to store the processed isotope datasets
           whichIsotope  : the isotope you need please either specify H2, O18 or C13 
+         outputIsoPath  : where to save the processed dataset
           isTimeSeries  : if the user need the time series plot for the isotope 
+          
     '''
     ##read in the raw isotope dataset 
     assert whichIsotope in ['C13', 'O18', 'H2'], "Please name whichIsotope to be one of [C13, O18, H2]"

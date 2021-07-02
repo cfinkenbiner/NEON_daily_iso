@@ -70,9 +70,10 @@ layer.isotope <- function(hdf5_file, sitename, which_part = "C13") {
       ###read the isotope and concentration at each layer
       all_layer <- h5read(hdf5_file, paste0('/', sitename,'/dp01/data/isoCo2/', layer_names[k]))
       ###The isotope dataset
-      data_iso <- all_layer[[iso_data]][,c("mean_cal","timeBgn")]
+      data_iso <- all_layer[[iso_data]][,c("mean_cal","timeBgn")] ##make sure to use mean_cal
+     
       ###The Dry mole H2O dataset
-      data_rtio <- all_layer[[iso_con]][,c("mean","timeBgn")]
+      data_rtio <- all_layer[[iso_con]][,c("mean_cal","timeBgn")] ##make sure to use mean_cal
 
       names(data_iso) <- c(paste0(which_part, "_isoCo2"),"timeBgn")
       names(data_rtio) <- c(paste0(which_part, "_",iso_con),"timeBgn")

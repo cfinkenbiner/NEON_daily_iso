@@ -14,8 +14,9 @@ library(sp)
 library(ggrepel)
 
 # get a list of available files.
-flist <- list.files("C:/Users/libon/Box/neon_extrac_data/CalibratedWaterFiles/210405_Wiso",pattern='.h5',full.names=TRUE,recursive=TRUE)
+# flist <- list.files("C:/Users/libon/Box/neon_extrac_data/CalibratedWaterFiles/210405_Wiso",pattern='.h5',full.names=TRUE,recursive=TRUE)
 
+flist <- list.files("C:/Users/libon/Box/neon_extrac_data/CalibratedWaterFiles/210721_Wiso",pattern='.h5',full.names=TRUE,recursive=TRUE)
 
 sites.tmp <- strsplit(flist,split=".",fixed=TRUE)   
 
@@ -24,8 +25,8 @@ layer.isotope <- function(hdf5_file, sitename, which_part = "H2") {
   ### hdf5_file     : HDF5 file's absolute path
   ### sitename      : The name of the required neon sites, correspondent to "codes[i]" 
   ### which_part    : Either "H2" or "O18"
-    iso_con <- "rtioMoleWetH2o"
-  
+    #iso_con <- "rtioMoleWetH2o"
+    iso_con <- "rtioMoleDryH2o"
     if (which_part == "H2") {
         
          iso_data <- "dlta2HH2o"
@@ -65,9 +66,7 @@ layer.isotope <- function(hdf5_file, sitename, which_part = "H2") {
       ###The isotope dataset
       data_iso <- all_layer[[iso_data]][,c("mean_cal","timeBgn")]
       ###The Dry mole H2O dataset
-      data_rtio <- all_layer[[iso_con]][,c("mean","timeBgn")] ## no way to generate a ¡®calibrated¡¯ version of rtioMoleWetH2o 
-                                                              ## because the reference measurements don¡¯t 
-                                                              ## have a known value of rtioMoleWetH2o
+      data_rtio <- all_layer[[iso_con]][,c("mean","timeBgn")]
       
       names(data_iso) <- c(paste0(which_part, "_isoH2o"),"timeBgn")
       names(data_rtio) <- c(paste0(which_part, "_",iso_con),"timeBgn")
@@ -88,16 +87,30 @@ layer.isotope <- function(hdf5_file, sitename, which_part = "H2") {
 
 site.keeling <- list()
 
+###load the radiation in advance,
+radiation <-  read.csv(file = "C:/Users/libon/Box/neon_extrac_data/Scientific Data Code/SWin_.csv")
+radiation <- radiation[c("timeBgn","SwIn_mean","sitename")]
+radiation$timeBgn <- as.POSIXct(radiation$timeBgn,format="%Y-%m-%dT%H:%M:%OSZ",tz="UTC")
+radiation$timeBgn <- round_date(radiation$timeBgn, "30 minutes")
 
 # loop through sfiles and load the calibration datasets 
 for (j in 1:length(flist)) {
   site <-  strsplit(flist[j],split=".",fixed=TRUE)[[1]][3]   
+  ###select the site short wave radiation values
+  SwRadi.site <- radiation[radiation$sitename == site,]
+  SwRadi.site <- subset(SwRadi.site, select = c("timeBgn","SwIn_mean"))
+  
   print(paste0("*******************Star working on ", site, " *****************"))
   tower_data <- layer.isotope(flist[j], site, which_part = "O18")
   binded_data <- do.call(rbind, tower_data) 
+  binded_data$timeBgn <- round_date(binded_data$timeBgn, "30 minutes")
+  merged_dt <- merge(binded_data, SwRadi.site, by=c("timeBgn"))
+  merged_dt <- merged_dt[merged_dt$SwIn_mean >= 10,]
+  
+  
 	  # fit the model using all heights
   keelings <- binded_data %>% group_by(dom) %>% na.omit() %>% 
-	    do(model = lm(I(O18_isoH2o*O18_rtioMoleWetH2o) ~ O18_rtioMoleWetH2o, data=.))
+	    do(model = lm(I(O18_isoH2o*O18_rtioMoleDryH2o) ~ O18_rtioMoleDryH2o, data=.))
   print("*******************Finished the Keeling *****************")
   
   tempdf <- data.frame(date = rep(NA, nrow(keelings)), 
@@ -116,8 +129,7 @@ for (j in 1:length(flist)) {
     if (nrow(summaryTable) == 2) {
       tempdf[rs, 5] <- summaryTable[2,2] 
     }
-        
-   
+
     
   }
   site.keeling[[j]] <- tempdf
